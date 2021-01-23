@@ -4,7 +4,7 @@ function Unzip {
     
     param(  [Parameter(ValueFromPipeline=$true)][string]$zip,
             [Parameter()][string]$target,
-            [Parameter()][bool]$force=$true,
+            [Parameter()][switch]$force,
             #ZIP uses a default codepage of IBM437.
             [Parameter()][System.Text.Encoding]$encoding=[System.Text.Encoding]::GetEncoding(437),
             [Parameter()][switch]$v)
@@ -14,11 +14,10 @@ function Unzip {
             Write-Output "verbose -> $v"
             Write-Output "target -> $target"
             Write-Output "force -> $force"
-            Write-Output "encoding ->"
             #Write-Output $encoding
         }
 
-        if($force && [System.IO.Directory]::Exists($target)){
+        if($force -and [System.IO.Directory]::Exists($target)){
             Remove-Item -LiteralPath $target -Force -Recurse
             if($v){ Write-Host "removed directory: $target" }
         }
@@ -84,4 +83,4 @@ Add-Type -TypeDefinition $source
 # Unzip
  
 $encoding = [System.Text.Encoding]::GetEncoding(437)
-Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -force $true -encoding $encoding -v
+Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -f -encoding $encoding -v
