@@ -10,6 +10,8 @@ function Unzip {
             [Parameter()][switch]$v)
 
     begin{
+        [System.Diagnostics.Stopwatch] $stopwatch = [System.Diagnostics.Stopwatch]::new()
+        $stopwatch.Start()
         if($v){
             Write-Output "verbose -> $v"
             Write-Output "target -> $target"
@@ -46,7 +48,11 @@ function Unzip {
         }
     }
     
-    end{ if($v){Write-Output "unzipping finished"} }
+    end{
+        $stopwatch.Stop()
+        $ms = $stopwatch.ElapsedMilliseconds
+        Write-Output "unzipping $zip to $target finished in $ms ms"
+    }
 }
 
 function extractToFile {
@@ -80,8 +86,8 @@ function extractToFile {
 $encoding = [System.Text.Encoding]::GetEncoding(437)
 
 #using piped input
-Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -f -encoding $encoding -v
+Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\gist\unzipped" -f -encoding $encoding -v
 #using absolute input
-Unzip -zip "C:\Users\renato\code\ps\a.zip" -target "C:\Users\renato\code\ps\asdf" -f -encoding $encoding -v
+Unzip -zip "C:\Users\renato\code\gist\a.zip" -target "C:\Users\renato\code\gist\a" -f -encoding $encoding 
 #using relative input
-Unzip -zip ".\b.zip" -target "C:\Users\renato\code\ps\asdf" -f -encoding $encoding -v
+Unzip -zip ".\b.zip" -target "C:\Users\renato\code\gist\b" -f -encoding $encoding -v
