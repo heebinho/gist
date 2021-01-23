@@ -41,12 +41,39 @@ function Unzip {
                 continue
             }
             if($v){ write-host "extract file -> $fullname" }
-            [System.IO.Compression.ZipArchiveEntryExtensions]::ExtractToFile($entry, $fullname, $force)           
+            #[System.IO.Compression.ZipArchiveEntryExtensions]::ExtractToFile($entry, $fullname, $force)
+            extractToFile $entry $fullname $force
         }
     }
     
     end{ if($v){Write-Output "unzipping finished"} }
      
+}
+
+function extractToFile {
+    param (
+        [Parameter()][System.IO.Compression.ZipArchiveEntry]$source,
+        [Parameter()][string]$destinationFileName,
+        [Parameter()][bool]$overwrite=$false
+    )
+    $mode = [System.IO.FileMode]::CreateNew
+    if($overwrite){ $mode = [System.IO.FileMode]::Create}
+
+    try {
+        [System.IO.Stream] $fs = [System.IO.FileStream]::new($destinationFileName, $mode, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+        [System.IO.Stream] $es = $source.Open()
+        $es.CopyTo($fs)
+    }
+    catch {
+        Write-Host "error while extracting $source to $destinationFileName overwrite:$overwrite"
+        Write-Host $Error[0]
+    }
+    finally {
+        if($es){$es.Dispose()}
+        if($fs){$fs.Dispose()}
+    }
+
+    [System.IO.File]::SetLastWriteTime($destinationFileName, $source.LastWriteTime.DateTime)
 }
 
 $source = @"
