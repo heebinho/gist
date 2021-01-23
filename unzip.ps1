@@ -24,7 +24,6 @@ function Unzip {
             $dir = [System.IO.Directory]::CreateDirectory($target)
             if($v){ Write-Host "created target directory: $dir `n" }
         }
-        
     }
 
     process{
@@ -41,13 +40,11 @@ function Unzip {
                 continue
             }
             if($v){ write-host "extract file -> $fullname" }
-            #[System.IO.Compression.ZipArchiveEntryExtensions]::ExtractToFile($entry, $fullname, $force)
             extractToFile $entry $fullname $force
         }
     }
     
     end{ if($v){Write-Output "unzipping finished"} }
-     
 }
 
 function extractToFile {
@@ -76,33 +73,9 @@ function extractToFile {
     [System.IO.File]::SetLastWriteTime($destinationFileName, $source.LastWriteTime.DateTime)
 }
 
-$source = @"
-namespace System.IO.Compression
-{
-    public static class ZipArchiveEntryExtensions
-    {
-        public static void ExtractToFile(ZipArchiveEntry source, string destinationFileName, bool overwrite)
-        {
-            FileMode fMode = overwrite ? FileMode.Create : FileMode.CreateNew;
-
-            using (Stream fs = new FileStream(destinationFileName, fMode, FileAccess.Write, FileShare.None, bufferSize: 0x1000, useAsync: false))
-            {
-                using (Stream es = source.Open())
-                    es.CopyTo(fs);
-            }
-
-            File.SetLastWriteTime(destinationFileName, source.LastWriteTime.DateTime);
-        }
-    }
-}
-"@
-
-Add-Type -TypeDefinition $source
-
-
-#Write-Output $encoding
 #[System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $target)
 
 # Unzip
 $encoding = [System.Text.Encoding]::GetEncoding(437)
+#Write-Output $encoding
 Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -f -encoding $encoding -v
