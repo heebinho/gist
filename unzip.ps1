@@ -27,8 +27,10 @@ function Unzip {
     }
 
     process{
-        if($v) {Write-Output "extracting -> $zip" }
-
+        if($v) {Write-Output "zip -> $zip" }
+        $zip = Resolve-Path $zip
+        if($v) {Write-Output "zip fullname -> $zip" }
+        
         $entries = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Read, $encoding).Entries
         foreach ($entry in $entries){
 
@@ -79,3 +81,8 @@ function extractToFile {
 $encoding = [System.Text.Encoding]::GetEncoding(437)
 #Write-Output $encoding
 Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -f -encoding $encoding -v
+
+
+Unzip -zip "C:\Users\renato\code\ps\a.zip" -target "C:\Users\renato\code\ps\asdf" -f -encoding $encoding -v
+
+Unzip -zip ".\b.zip" -target "C:\Users\renato\code\ps\asdf" -f -encoding $encoding -v
