@@ -8,41 +8,39 @@ function Unzip {
             [Parameter()][System.Text.Encoding]$encoding=[System.Text.Encoding]::GetEncoding(437) )
     
     begin{
-        Write-Output "setup"
         Write-Output "target -> $target"
-        Write-Output $force
+        Write-Output "force -> $force"
         #Write-Output $encoding
-        if([System.IO.Directory]::Exists($target)){
+
+        if($force && [System.IO.Directory]::Exists($target)){
             Remove-Item -LiteralPath $target -Force -Recurse
             Write-Host "removed directory: $target"
         }
         if (![System.IO.Directory]::Exists($target)){
-            [System.IO.Directory]::CreateDirectory($target)
-            Write-Host "created directory: $target"
+            $dir = [System.IO.Directory]::CreateDirectory($target)
+            Write-Host "created target directory: $dir `n"
         }
         
     }
 
     process{
-        Write-Output $zip
-        # Write-Output $encoding
-        #$encoding = [System.Text.Encoding]::GetEncoding($codepage)
+        Write-Output "extracting -> $zip"
+
         #[System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $target)
 
         $entries = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Read, $encoding).Entries
         foreach ($entry in $entries) {
             Write-Host $entry
-            #[System.IO.Compression.ZipFile]::ExtractToDirectory()
+
             $fullname = [System.IO.Path]::GetFullPath( [System.IO.Path]::Combine($target, $entry.FullName) )
             $dir = [System.IO.Path]::GetDirectoryName($fullname)
-            Write-Host "dir -> $dir"
+            
             if (![System.IO.Directory]::Exists($dir)){
                 [System.IO.Directory]::CreateDirectory($dir)
                 continue
             }
-            write-host "fullname -> $fullname"
-            #$entry.ExtractToFile($fullname, $force)
-            [System.IO.Compression.ZipArchiveEntryExtensions]::ExtractToFile($entry, $fullname, $force)
+            write-host "extract to file -> $fullname"
+            [System.IO.Compression.ZipArchiveEntryExtensions]::ExtractToFile($entry, $fullname, $force)           
         }
         
     }
@@ -78,7 +76,6 @@ Add-Type -TypeDefinition $source
 
 
 # Unzip
-# Get-ChildItem -Path ".\*.zip" "c" | Unzip
  
 $encoding = [System.Text.Encoding]::GetEncoding(437)
 Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -force $true -encoding $encoding
