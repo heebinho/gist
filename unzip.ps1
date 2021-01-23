@@ -14,7 +14,6 @@ function Unzip {
             Write-Output "verbose -> $v"
             Write-Output "target -> $target"
             Write-Output "force -> $force"
-            #Write-Output $encoding
         }
 
         if($force -and [System.IO.Directory]::Exists($target)){
@@ -31,14 +30,11 @@ function Unzip {
     process{
         if($v) {Write-Output "extracting -> $zip" }
 
-        #[System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $target)
-
         $entries = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Read, $encoding).Entries
-        foreach ($entry in $entries) {
+        foreach ($entry in $entries){
 
             $fullname = [System.IO.Path]::GetFullPath( [System.IO.Path]::Combine($target, $entry.FullName) )
             $dir = [System.IO.Path]::GetDirectoryName($fullname)
-            
             if (![System.IO.Directory]::Exists($dir)){
                 $dir = [System.IO.Directory]::CreateDirectory($dir)
                 if($v) {Write-Host "created directory -> $dir" }
@@ -47,12 +43,9 @@ function Unzip {
             if($v){ write-host "extract file -> $fullname" }
             [System.IO.Compression.ZipArchiveEntryExtensions]::ExtractToFile($entry, $fullname, $force)           
         }
-        
     }
     
-    end{
-        #Write-Output "teardown"
-    }
+    end{ if($v){Write-Output "unzipping finished"} }
      
 }
 
@@ -80,7 +73,9 @@ namespace System.IO.Compression
 Add-Type -TypeDefinition $source
 
 
+#Write-Output $encoding
+#[System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $target)
+
 # Unzip
- 
 $encoding = [System.Text.Encoding]::GetEncoding(437)
 Get-ChildItem -Path ".\*.zip"  | Unzip -target "C:\Users\renato\code\ps\unzipped" -f -encoding $encoding -v
