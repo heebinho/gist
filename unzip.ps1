@@ -20,11 +20,11 @@ function Unzip {
 
         if($force -and [System.IO.Directory]::Exists($target)){
             Remove-Item -LiteralPath $target -Force -Recurse
-            if($v){ Write-Host "removed directory: $target" }
+            if($v){ Write-Output "removed directory: $target" }
         }
         if (![System.IO.Directory]::Exists($target)){
             $dir = [System.IO.Directory]::CreateDirectory($target)
-            if($v){ Write-Host "created target directory: $dir `n" }
+            if($v){ Write-Output "created target directory: $dir `n" }
         }
     }
 
@@ -35,16 +35,18 @@ function Unzip {
 
         $entries = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Read, $encoding).Entries
         foreach ($entry in $entries){
+            if($v){ Write-Output "entry -> $entry" }
 
             $fullname = [System.IO.Path]::GetFullPath( [System.IO.Path]::Combine($target, $entry.FullName) )
             $dir = [System.IO.Path]::GetDirectoryName($fullname)
             if (![System.IO.Directory]::Exists($dir)){
                 $dir = [System.IO.Directory]::CreateDirectory($dir)
-                if($v) {Write-Host "created directory -> $dir" }
-                continue
+                if($v) {Write-Output "created directory -> $dir" }
             }
-            if($v){ write-host "extract file -> $fullname" }
-            extractToFile $entry $fullname $force
+            if($v){ Write-Output "extractToFile -> $fullname" }
+            if(-Not $entry.Name -eq ""){
+                extractToFile $entry $fullname $force
+            }
         }
     }
     
@@ -70,8 +72,8 @@ function extractToFile {
         $es.CopyTo($fs)
     }
     catch {
-        Write-Host "error while extracting $source to $destinationFileName overwrite:$overwrite"
-        Write-Host $Error[0]
+        Write-Output "error while extracting $source to $destinationFileName overwrite:$overwrite"
+        Write-Output $Error[0]
     }
     finally {
         if($es){$es.Dispose()}
